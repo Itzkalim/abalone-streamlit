@@ -20,31 +20,54 @@ def load_model():
 model = load_model()
 
 # =====================================================
-# Custom CSS for centered, eye-catching UI
+# Custom CSS (Sticky header + centered card + nice UI)
 # =====================================================
 st.markdown("""
 <style>
-/* Center the main container and fix width */
+
+/* ===== Sticky Header ===== */
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: linear-gradient(180deg, #020617 0%, #020617 100%);
+    padding: 16px 0 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Header content centered to same width as app */
+.sticky-header-inner {
+    max-width: 900px;
+    margin: auto;
+    padding: 0 1rem;
+}
+
+/* Sticky title style */
+.sticky-title {
+    font-size: 40px;
+    font-weight: 900;
+    margin: 0;
+}
+
+/* Space below header so content doesn't hide under it */
+.header-spacer {
+    height: 18px;
+}
+
+/* ===== Centered App Width ===== */
 .block-container {
     max-width: 900px;
-    padding-top: 2rem;
+    padding-top: 1.2rem;
     padding-bottom: 2rem;
 }
 
-/* Main card */
+/* ===== Card Styling ===== */
 .center-card {
     background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 22px;
     padding: 34px 32px;
     box-shadow: 0 25px 45px rgba(0,0,0,0.45);
-}
-
-/* Big title */
-.app-title {
-    font-size: 44px;
-    font-weight: 900;
-    margin-bottom: 18px;
 }
 
 /* Section title */
@@ -93,9 +116,16 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================
-# Header
+# Sticky Header (always visible)
 # =====================================================
-st.markdown('<div class="app-title">🐚 Abalone Age Prediction App</div>', unsafe_allow_html=True)
+st.markdown("""
+<div class="sticky-header">
+    <div class="sticky-header-inner">
+        <h1 class="sticky-title">🐚 Abalone Age Prediction App</h1>
+    </div>
+</div>
+<div class="header-spacer"></div>
+""", unsafe_allow_html=True)
 
 # =====================================================
 # Input Card
@@ -127,18 +157,16 @@ with st.form("abalone_form"):
 st.markdown('</div>', unsafe_allow_html=True)
 
 # =====================================================
-# Encode gender (matches training: drop_first=True)
-# Female is baseline
+# Encode gender (matches training: get_dummies drop_first=True)
+# Female is baseline, so only gender_I and gender_M exist
 # =====================================================
 gender_I = 1 if gender == "I" else 0
 gender_M = 1 if gender == "M" else 0
 
-_toggle_guard = submit  # prevents auto prediction
-
 # =====================================================
 # Prediction + Results
 # =====================================================
-if _toggle_guard:
+if submit:
     input_df = pd.DataFrame({
         "Length": [length],
         "Diameter": [diameter],
