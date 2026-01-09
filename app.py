@@ -20,48 +20,43 @@ def load_model():
 model = load_model()
 
 # =====================================================
-# Custom CSS (Sticky header + centered card + nice UI)
+# Custom CSS (Centered sticky header card + UI)
 # =====================================================
 st.markdown("""
 <style>
 
-/* ===== Sticky Header ===== */
-.sticky-header {
-    position: sticky;
-    top: 0;
-    z-index: 999;
-    background: linear-gradient(180deg, #020617 0%, #020617 100%);
-    padding: 16px 0 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-/* Header content centered to same width as app */
-.sticky-header-inner {
-    max-width: 900px;
-    margin: auto;
-    padding: 0 1rem;
-}
-
-/* Sticky title style */
-.sticky-title {
-    font-size: 40px;
-    font-weight: 900;
-    margin: 0;
-}
-
-/* Space below header so content doesn't hide under it */
-.header-spacer {
-    height: 18px;
-}
-
-/* ===== Centered App Width ===== */
+/* ===== Center width ===== */
 .block-container {
     max-width: 900px;
     padding-top: 1.2rem;
     padding-bottom: 2rem;
 }
 
-/* ===== Card Styling ===== */
+/* ===== Sticky Header Card (NOT full width) ===== */
+.sticky-card {
+    position: sticky;
+    top: 12px;               /* a little gap from top */
+    z-index: 999;
+    background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 16px 18px;
+    box-shadow: 0 18px 35px rgba(0,0,0,0.45);
+}
+
+/* Sticky title text */
+.sticky-title {
+    font-size: 36px;
+    font-weight: 900;
+    margin: 0;
+}
+
+/* Space below sticky header so content doesn't overlap */
+.after-sticky-gap {
+    height: 18px;
+}
+
+/* ===== Main card styling ===== */
 .center-card {
     background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
     border: 1px solid rgba(255,255,255,0.08);
@@ -70,7 +65,6 @@ st.markdown("""
     box-shadow: 0 25px 45px rgba(0,0,0,0.45);
 }
 
-/* Section title */
 .section-title {
     font-size: 26px;
     font-weight: 800;
@@ -84,7 +78,6 @@ st.markdown("""
     margin-top: 22px;
 }
 
-/* Button styling */
 .stButton > button {
     width: 190px;
     height: 50px;
@@ -116,15 +109,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================
-# Sticky Header (always visible)
+# Sticky Header (Centered card style)
 # =====================================================
 st.markdown("""
-<div class="sticky-header">
-    <div class="sticky-header-inner">
-        <h1 class="sticky-title">🐚 Abalone Age Prediction App</h1>
-    </div>
+<div class="sticky-card">
+    <h1 class="sticky-title">🐚 Abalone Age Prediction App</h1>
 </div>
-<div class="header-spacer"></div>
+<div class="after-sticky-gap"></div>
 """, unsafe_allow_html=True)
 
 # =====================================================
@@ -158,7 +149,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # =====================================================
 # Encode gender (matches training: get_dummies drop_first=True)
-# Female is baseline, so only gender_I and gender_M exist
+# Female is baseline => only gender_I and gender_M exist
 # =====================================================
 gender_I = 1 if gender == "I" else 0
 gender_M = 1 if gender == "M" else 0
