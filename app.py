@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 
 # =====================================================
-# Page configuration (wide helps avoid scrolling)
+# Page configuration
 # =====================================================
 st.set_page_config(
     page_title="Abalone Age Prediction App",
@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# Load model (cached for speed)
+# Load model (cached)
 # =====================================================
 @st.cache_resource
 def load_model():
@@ -20,19 +20,26 @@ def load_model():
 model = load_model()
 
 # =====================================================
-# Custom CSS (sticky header + compact one-page UI)
+# CSS — REMOVE STREAMLIT TOP BARS + STYLE APP
 # =====================================================
 st.markdown("""
 <style>
 
-/* Make page compact to avoid scroll */
+/* 🚫 REMOVE STREAMLIT DEFAULT UI */
+header {visibility: hidden;}
+footer {visibility: hidden;}
+[data-testid="stToolbar"] {display: none;}
+[data-testid="stDecoration"] {display: none;}
+[data-testid="stStatusWidget"] {display: none;}
+
+/* Layout compact */
 .block-container {
     max-width: 1200px;
-    padding-top: 0.8rem;
-    padding-bottom: 0.8rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
 }
 
-/* Sticky Header Card (centered) */
+/* Sticky centered header card */
 .sticky-card {
     position: sticky;
     top: 10px;
@@ -40,9 +47,9 @@ st.markdown("""
     background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 18px;
-    padding: 14px 18px;
+    padding: 14px 20px;
     box-shadow: 0 18px 35px rgba(0,0,0,0.45);
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .sticky-title {
@@ -56,11 +63,11 @@ st.markdown("""
     background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 20px;
-    padding: 22px 22px;
+    padding: 22px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.40);
 }
 
-/* Smaller section title */
+/* Section titles */
 .section-title {
     font-size: 22px;
     font-weight: 800;
@@ -75,13 +82,14 @@ st.markdown("""
     font-size: 16px;
     font-weight: 800;
 }
+
 .button-center {
     display: flex;
     justify-content: center;
-    margin-top: 14px;
+    margin-top: 12px;
 }
 
-/* KPI Cards */
+/* KPI cards */
 .kpi-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
@@ -99,18 +107,13 @@ st.markdown("""
 .kpi-value {
     font-size: 38px;
     font-weight: 900;
-    margin: 0;
 }
 
-/* Reduce spacing between elements to fit one screen */
-div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stForm"]) {
-    gap: 0.6rem;
-}
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# Sticky Header (always visible)
+# Sticky Header (only your header, nothing else)
 # =====================================================
 st.markdown("""
 <div class="sticky-card">
@@ -119,16 +122,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================
-# Two-column layout: Inputs (Left) | Results (Right)
+# Layout: Inputs | Results (ONE PAGE)
 # =====================================================
 left, right = st.columns([1.1, 0.9], gap="large")
 
-# Keep prediction values
-rings = None
-age = None
-predicted = False
-
-# ================= LEFT: INPUTS =================
+# ================= INPUTS =================
 with left:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">🔢 Input Features</div>', unsafe_allow_html=True)
@@ -138,15 +136,15 @@ with left:
         c1, c2 = st.columns(2)
 
         with c1:
-            length = st.number_input("Length", min_value=0.0, max_value=1.0, value=0.52, step=0.01, format="%.2f")
-            height = st.number_input("Height", min_value=0.0, max_value=1.0, value=0.14, step=0.01, format="%.2f")
-            shucked_weight = st.number_input("Shucked weight", min_value=0.0, max_value=2.0, value=0.22, step=0.01, format="%.2f")
-            shell_weight = st.number_input("Shell weight", min_value=0.0, max_value=2.0, value=0.18, step=0.01, format="%.2f")
+            length = st.number_input("Length", 0.0, 1.0, 0.52, 0.01)
+            height = st.number_input("Height", 0.0, 1.0, 0.14, 0.01)
+            shucked_weight = st.number_input("Shucked weight", 0.0, 2.0, 0.22, 0.01)
+            shell_weight = st.number_input("Shell weight", 0.0, 2.0, 0.18, 0.01)
 
         with c2:
-            diameter = st.number_input("Diameter", min_value=0.0, max_value=1.0, value=0.41, step=0.01, format="%.2f")
-            whole_weight = st.number_input("Whole weight", min_value=0.0, max_value=4.0, value=0.83, step=0.01, format="%.2f")
-            viscera_weight = st.number_input("Viscera weight", min_value=0.0, max_value=2.0, value=0.18, step=0.01, format="%.2f")
+            diameter = st.number_input("Diameter", 0.0, 1.0, 0.41, 0.01)
+            whole_weight = st.number_input("Whole weight", 0.0, 4.0, 0.83, 0.01)
+            viscera_weight = st.number_input("Viscera weight", 0.0, 2.0, 0.18, 0.01)
 
         gender = st.radio("Gender", ["F", "M", "I"], horizontal=True)
 
@@ -156,18 +154,12 @@ with left:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= RIGHT: RESULTS =================
+# ================= RESULTS =================
 with right:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📌 Prediction Output</div>', unsafe_allow_html=True)
 
-    # Default message
-    if "last_pred" not in st.session_state:
-        st.info("Enter values and click **Predict** to see results here.")
-
-    # When Predict pressed, compute and store results
-    if 'submit' in locals() and submit:
-        # Encode gender (drop_first=True => Female baseline)
+    if submit:
         gender_I = 1 if gender == "I" else 0
         gender_M = 1 if gender == "M" else 0
 
@@ -186,14 +178,7 @@ with right:
         rings = float(model.predict(input_df)[0])
         age = rings + 1.5
 
-        st.session_state["last_pred"] = {"rings": rings, "age": age}
-
         st.success("✅ Prediction Complete")
-
-    # Show last prediction (so it stays visible without scrolling)
-    if "last_pred" in st.session_state:
-        rings = st.session_state["last_pred"]["rings"]
-        age = st.session_state["last_pred"]["age"]
 
         k1, k2 = st.columns(2)
 
@@ -219,18 +204,7 @@ with right:
                 unsafe_allow_html=True
             )
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        with st.expander("Show input used (optional)"):
-            st.write("These were the last inputs used for prediction:")
-            st.write({
-                "Length": length,
-                "Diameter": diameter,
-                "Height": height,
-                "Whole weight": whole_weight,
-                "Shucked weight": shucked_weight,
-                "Viscera weight": viscera_weight,
-                "Shell weight": shell_weight,
-                "Gender": gender
-            })
+    else:
+        st.info("Enter inputs and click **Predict** to see results.")
 
     st.markdown('</div>', unsafe_allow_html=True)
