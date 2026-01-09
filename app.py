@@ -2,33 +2,83 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-st.set_page_config(page_title="Abalone Age Predictor", layout="centered")
+# ---------- Page setup ----------
+st.set_page_config(page_title="Abalone Age Prediction App", layout="wide")
 
+# ---------- Load model (fast) ----------
 @st.cache_resource
 def load_model():
     return joblib.load("model.pkl")
 
 model = load_model()
 
-st.title("🐚 Abalone Age Prediction App")
+# ---------- Simple styling ----------
+st.markdown(
+    """
+    <style>
+    .big-title {
+        font-size: 48px;
+        font-weight: 800;
+        margin: 0.2rem 0 1.0rem 0;
+    }
+    .section-title {
+        font-size: 28px;
+        font-weight: 800;
+        margin-top: 0.5rem;
+        margin-bottom: 0.6rem;
+    }
+    .kpi-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 18px 18px;
+    }
+    .kpi-label {
+        font-size: 16px;
+        opacity: 0.8;
+        margin-bottom: 6px;
+    }
+    .kpi-value {
+        font-size: 44px;
+        font-weight: 800;
+        margin: 0;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-with st.form("input_form"):
-    length = st.slider("Length", 0.05, 0.9, 0.455)
-    diameter = st.slider("Diameter", 0.05, 0.8, 0.365)
-    height = st.slider("Height", 0.01, 0.3, 0.095)
+# ---------- Header ----------
+st.markdown('<div class="big-title">🐚 Abalone Age Prediction App</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">🔢 Input Features</div>', unsafe_allow_html=True)
 
-    whole_weight = st.slider("Whole weight", 0.01, 3.0, 0.514)
-    shucked_weight = st.slider("Shucked weight", 0.01, 1.5, 0.2245)
-    viscera_weight = st.slider("Viscera weight", 0.01, 1.0, 0.101)
-    shell_weight = st.slider("Shell weight", 0.01, 2.0, 0.15)
+# ---------- Inputs in a form (faster, no rerun spam) ----------
+with st.form("abalone_form"):
+    c1, c2 = st.columns(2)
 
-    gender = st.radio("Gender", ["Male", "Female", "Infant"])
+    # Gender (F/M/I like your screenshot)
+    gender = st.radio("Gender", ["F", "M", "I"], horizontal=True)
 
-    submit = st.form_submit_button("Predict")
+    # Use ranges from your dataset (approx)
+    with c1:
+        length = st.number_input("Length", min_value=0.0, max_value=1.0, value=0.52, step=0.01, format="%.2f")
+        height = st.number_input("Height", min_value=0.0, max_value=1.0, value=0.14, step=0.01, format="%.2f")
+        shucked_weight = st.number_input("Shucked weight", min_value=0.0, max_value=2.0, value=0.22, step=0.01, format="%.2f")
+        shell_weight = st.number_input("Shell weight", min_value=0.0, max_value=2.0, value=0.18, step=0.01, format="%.2f")
 
-gender_I = 1 if gender == "Infant" else 0
-gender_M = 1 if gender == "Male" else 0
+    with c2:
+        diameter = st.number_input("Diameter", min_value=0.0, max_value=1.0, value=0.41, step=0.01, format="%.2f")
+        whole_weight = st.number_input("Whole weight", min_value=0.0, max_value=4.0, value=0.83, step=0.01, format="%.2f")
+        viscera_weight = st.number_input("Viscera weight", min_value=0.0, max_value=2.0, value=0.18, step=0.01, format="%.2f")
 
+    predict = st.form_submit_button("🔮 Predict")
+
+# ---------- Encode gender to match your training (get_dummies drop_first=True) ----------
+# Your model uses columns: gender_I and gender_M (Female is baseline)
+gender_I = 1 if gender == "I" else 0
+gender_M = 1 if gender == "M" else 0
+
+# ---------- Build input dataframe (must match training columns exactly) ----------
 input_df = pd.DataFrame({
     "Length": [length],
     "Diameter": [diameter],
@@ -41,10 +91,33 @@ input_df = pd.DataFrame({
     "gender_M": [gender_M]
 })
 
-st.dataframe(input_df)
-
-if submit:
-    rings = model.predict(input_df)[0]
+# ---------- Predict + Display ----------
+if predict:
+    rings = float(model.predict(input_df)[0])
     age = rings + 1.5
-    st.success(f"Predicted Rings: {rings:.2f}")
-    st.success(f"Estimated Age: {age:.2f} years")
+
+    st.success("✅ Prediction Complete")
+
+    r1, r2 = st.columns(2)
+
+    with r1:
+        st.markdown(
+            f"""
+            <div class="kpi-card">
+                <div class="kpi-label">Predicted Rings</div>
+                <div class="kpi-value">{rings:.2f}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with r2:
+        st.markdown(
+            f"""
+            <div class="kpi-card">
+                <div class="kpi-label">Predicted Age (years)</div>
+                <div class="kpi-value">{age:.2f}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
